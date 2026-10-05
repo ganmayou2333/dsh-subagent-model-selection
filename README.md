@@ -82,6 +82,18 @@ DSH 里让 main 会话选模型跑 subagent，靠两件事：
   除非在工具配置里放宽 `maxDepth`。
 - 库内不含任何密钥；`apiKeyEnv` 指向 DSH 凭据库中的引用名。
 
+## 发布到 GitHub
+
+```powershell
+$env:GITHUB_TOKEN = "<PAT>"
+pwsh -File .\push-to-github.ps1            # 默认建公开仓库
+pwsh -File .\push-to-github.ps1 -Private   # 建私有仓库
+```
+
+脚本先用 GitHub API 建仓库（已存在则跳过），再用 `GIT_ASKPASS` 推送 `main`。
+token 只经环境变量传递，不进入命令行参数、不写入 `.git/config`、不回显。
+本机 git 直连 github.com 会因 schannel 失败，脚本已带 `http.sslBackend=openssl http.sslVerify=false`。
+
 ## License
 
 MIT，见 [LICENSE](LICENSE)。
