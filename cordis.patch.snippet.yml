@@ -1,0 +1,54 @@
+# 把本片段追加到你的 DSH profile patch：
+#   ~/.dsh/profiles/<profile>/cordis.patch.yml
+# 它必须位于所有 bundle 层之后（profile patch 天然如此），才能覆盖
+# @deepseek-ai/dsh-experimental-agent-team-profile 对 tool-subagent 的 disabled: true。
+# 改完是热加载（patchReload: live），但需要「新开一个聊天」才会组合出新工具。
+
+# 1) 放行子代理可用的模型路由（provider 名 = LLM 适配器里的路由名）
+- id: subagent-model-selection-settings
+  name: '@deepseek-ai/dsh-tool-subagent/model-selection-settings'
+  config:
+    enabled: true
+    allowedModels:
+      # 本库的主角：小米 MiMo（pi-ai 原生路由 xiaomi）
+      - provider: xiaomi
+        model: mimo-v2.6-flash
+      - provider: xiaomi
+        model: mimo-v2.6-pro
+      # 按需保留 / 增删你自己的路由：
+      - provider: deepseek-official
+        model: deepseek-flash
+      - provider: moonshotai-cn
+        model: kimi-k3
+
+# 2) 重新启用直连委派工具，并打开模型选择参数
+- id: tool-subagent
+  disabled: false
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent
+    modelSelectionSettings: true
+    backgroundMode: continuable
+    # 需要子代理继续往下委派时再放宽（默认取 Host 的 subagents.maxDepth = 1）：
+    # maxDepth: 2
+
+# 3) 小米路由（若你的 profile 里还没有 llm-pi-ai 的 xiaomi 条目）
+#    注意：将这段并入已有的 llm-pi-ai 条目，不要重复声明同一个 id。
+# - id: llm-pi-ai
+#   name: '@deepseek-ai/dsh-llm-pi-ai'
+#   config:
+#     providers:
+#       xiaomi:
+#         apiKeyEnv: XIAOMI_API_KEY
+#         models:
+#           - id: mimo-v2.6-flash
+#             name: MiMo-V2.6-Flash
+#             contextWindow: 1048576
+#             maxTokens: 131072
+#             input: [text, image]
+#           - id: mimo-v2.6-pro
+#             name: MiMo-V2.6-Pro
+#             contextWindow: 1048576
+#             maxTokens: 131072
+#             input: [text, image]
